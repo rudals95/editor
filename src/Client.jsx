@@ -14,21 +14,33 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import DownloadIcon from "@mui/icons-material/Download";
-
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import AddIcon from "@mui/icons-material/Add";
+import SettingsIcon from "@mui/icons-material/Settings";
+import ClearIcon from "@mui/icons-material/Clear";
 function Client() {
   const conRef = useRef(null);
   const canvasRef = useRef(null);
   const [colorState, setColorState] = useState({
     width: "800px",
     height: "500px",
-    color: "",
-    position: "",
+    color: "#fff",
+    position: "center",
     font: "휴먼범석체",
     fontSize: "16px",
     img_url: "",
+    originalName: "",
   });
   const [stateType, setStateType] = useState("");
-  const [innerText, serInnerText] = useState("");
+  const [innerText, setInnerText] = useState("");
+  const [textSetting, setTextSetting] = useState(false);
+  const [textArr, setTextArr] = useState([
+    // {
+    //   position: "",
+    //   delete: "",
+    //   text: "",
+    // },
+  ]);
 
   const handleChange = useCallback(
     (e) => {
@@ -38,7 +50,7 @@ function Client() {
   );
   const onChangeText = useCallback(
     (e) => {
-      serInnerText(e.target.value);
+      setInnerText(e.target.value);
     },
     [innerText]
   );
@@ -54,7 +66,6 @@ function Client() {
 
   const onClick = useCallback(
     (type) => {
-      console.log(type);
       setStateType(type);
     },
     [stateType]
@@ -74,6 +85,7 @@ function Client() {
             setColorState((state) => ({
               ...state,
               img_url: reader.result,
+              originalName: file.name,
             }))
           );
           e.target.value = "";
@@ -92,6 +104,7 @@ function Client() {
     },
     [stateType]
   );
+  //사이즈변경
   const onChangeSize = useCallback(
     (e, type) => {
       console.log(e.target.value);
@@ -102,12 +115,23 @@ function Client() {
     },
     [colorState]
   );
+  //다운로드
   const onDownloadBtn = () => {
-    domtoimage.toBlob(conRef.current).then((blob) => {
-      saveAs(blob, `${stateType === "color" ? "defaul.png" : "dd"}`);
-    });
-  };
+    setTextSetting(false);
 
+    domtoimage
+      .toBlob(conRef.current)
+      .then((blob) => {
+        saveAs(
+          blob,
+          `${stateType === "color" ? "default" : colorState.originalName}`
+        );
+      })
+      .catch((err) => {
+        console.log(err, "err");
+      });
+  };
+  //윈도우넓이
   const innerWidth = () => {
     window.addEventListener("resize", () => {
       setColorState((state) => ({
@@ -117,8 +141,6 @@ function Client() {
     });
   };
 
-  // console.log(process.env.NODE_ENV);
-
   useEffect(() => {
     setColorState((state) => ({
       ...state,
@@ -126,7 +148,35 @@ function Client() {
     }));
     innerWidth();
   }, []);
+  useEffect(() => {
+    console.log(textArr, "textArr");
+  }, [textArr]);
 
+  //글자추가
+  const addText = useCallback(() => {
+    if (innerText === "") return;
+    setInnerText("");
+    setTextArr((state) => [
+      ...state,
+      {
+        position: "",
+        deleteMode: false,
+        text: innerText,
+        fontSize: colorState.fontSize.replace(/[^0-9]/g, "") || 16,
+        fontFamily: colorState.font,
+      },
+    ]);
+  }, [innerText, colorState]);
+  const delteText = useCallback(
+    (idx) => {
+      let copy = textArr.filter((a, i) => idx !== i);
+
+      setTextArr(copy);
+    },
+    [textArr]
+  );
+
+  // 컨버스
   const [location, setLocation] = useState({
     move: false,
     x: 10,
@@ -164,7 +214,6 @@ function Client() {
     },
     [location]
   );
-
   const canvasUp = useCallback(
     (e) => {
       setLocation((state) => ({ ...state, move: false }));
@@ -174,16 +223,21 @@ function Client() {
 
   return (
     <>
-      <canvas
+      {/* <canvas
         onMouseDown={canvasDown}
         onMouseMove={canvasMove}
         onMouseUp={canvasUp}
         ref={canvasRef}
         width="150"
         height="150"
-      />
+      /> */}
       <Container>
-        <div className="box">
+        <div
+          className="box"
+          onClick={() => {
+            setStateType("");
+          }}
+        >
           <div className="top">
             <TextField
               id="outlined-basic"
@@ -206,7 +260,9 @@ function Client() {
               }}
             />
             <IconButton
-              color={stateType === "upload" ? "primary" : "rgba(0, 0, 0, 0.54)"}
+              color={
+                colorState.img_url !== "" ? "primary" : "rgba(0, 0, 0, 0.54)"
+              }
               aria-label="upload picture"
               component="label"
               onClick={() => {
@@ -220,21 +276,40 @@ function Client() {
               color={stateType === "color" ? "primary" : "rgba(0, 0, 0, 0.54)"}
               aria-label="color picture"
               component="label"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 onClick("color");
               }}
             >
               <ColorLensIcon />
+              {stateType === "color" && (
+                <ChromePicker
+                  className="pickerStyle"
+                  color={colorState.color}
+                  onChange={onChange}
+                />
+              )}
             </IconButton>
-
             <IconButton
-              color={"primary"}
               aria-label="color picture"
               component="label"
               onClick={onDownloadBtn}
             >
               <DownloadIcon />
             </IconButton>
+            {colorState.img_url !== "" || innerText !== "" ? (
+              <IconButton
+                color={"error"}
+                aria-label="color picture"
+                component="label"
+                onClick={() => {
+                  setColorState((state) => ({ ...state, img_url: "" }));
+                  setInnerText("");
+                }}
+              >
+                <DeleteForeverIcon />
+              </IconButton>
+            ) : null}
           </div>
 
           <div className="text_con">
@@ -283,6 +358,9 @@ function Client() {
                   <MenuItem value={" NotoSansKR-Regular"}>
                     NotoSansKR-Regular
                   </MenuItem>
+                  {/* <MenuItem value={" NotoSansKR-Light"}>
+                    NotoSansKR-Light
+                  </MenuItem> */}
                 </Select>
               </FormControl>
               <TextField
@@ -296,7 +374,9 @@ function Client() {
                 }}
               />
             </div>
-            <div style={{ maxWidth: "400px", width: "100%" }}>
+            <div
+              style={{ maxWidth: "400px", width: "100%", position: "relative" }}
+            >
               <TextField
                 style={{ width: "100%" }}
                 id="outlined-basic"
@@ -305,6 +385,18 @@ function Client() {
                 value={innerText}
                 onChange={onChangeText}
               />
+              <div
+                style={{
+                  cursor: "pointer",
+                  position: "absolute",
+                  top: "50%",
+                  right: "15px",
+                  transform: "translate(0,-50%)",
+                }}
+                onClick={addText}
+              >
+                <AddIcon color={"primary"} />
+              </div>
             </div>
             <div className="align_con" style={{ display: "flex" }}>
               <IconButton
@@ -346,6 +438,20 @@ function Client() {
               >
                 <FormatAlignRightIcon />
               </IconButton>
+
+              {textArr.length > 0 && (
+                <IconButton
+                  color={textSetting ? "primary" : "default"}
+                  aria-label="color picture"
+                  component="label"
+                  onClick={() => {
+                    setInnerText("");
+                    setTextSetting(!textSetting);
+                  }}
+                >
+                  <SettingsIcon />
+                </IconButton>
+              )}
             </div>
           </div>
 
@@ -353,21 +459,52 @@ function Client() {
             ref={conRef}
             style={{
               border: "1px solid",
-              overflowX: "auto",
               padding: "10px",
-              position: "relative",
+              // overflowX: "auto",
+              // position: "relative",
+              minHeight: "300px",
+              background: colorState.color,
             }}
           >
-            <Bg_con props={colorState} />
-            <Img_con props={colorState}>
-              <img src={colorState.img_url} alt="" />
-            </Img_con>
-            <Text_con props={colorState}>{innerText}</Text_con>
+            {/* <Bg_con props={colorState} /> */}
+            {colorState.img_url !== "" && (
+              <Img_con props={colorState}>
+                <img src={colorState.img_url} width="100%" />
+              </Img_con>
+            )}
+
+            <Text_con props={colorState}>
+              {textArr.map((a, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    fontSize: a.fontSize + "px",
+                    fontFamily: a.fontFamily,
+                  }}
+                >
+                  <div
+                  // style={{
+                  //   display: "flex",
+                  //   justifyContent: colorState.position,
+                  // }}
+                  >
+                    <p>{a.text}</p>
+                    {textSetting && (
+                      <div
+                        style={{ marginBottom: "10px", cursor: "pointer" }}
+                        onClick={() => {
+                          delteText(idx);
+                        }}
+                      >
+                        <ClearIcon color="error" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </Text_con>
           </div>
         </div>
-        {stateType === "color" && (
-          <ChromePicker color={colorState.color} onChange={onChange} />
-        )}
       </Container>
     </>
   );

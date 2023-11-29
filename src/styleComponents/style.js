@@ -34,6 +34,12 @@ export const Container = styled.div`
 
     flex-wrap: wrap;
   }
+  & div.pickerStyle {
+    z-index: 2;
+    position: absolute;
+    top: 60px;
+    right: 0;
+  }
 `;
 
 export const Bg_con = styled.div`
@@ -51,22 +57,23 @@ export const Bg_con = styled.div`
 `;
 
 export const Img_con = styled.div`
-  position: absolute;
-  top: 50%;
+  /* position: absolute; */
+  /* top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); */
   width: 100%;
   height: 100%;
   padding: 10px;
 `;
 
-export const Text_con = styled.p`
-  position: absolute;
+export const Text_con = styled.div`
+  /* position: absolute;
   top: calc(50% + 10px);
   left: calc(50% + 10px);
-  transform: translate(calc(-50% - 10px));
-  width: calc(100% - 20px);
-  font-family: ${(props) => `${props.props.font}`};
+  transform: translate(calc(-50% - 10px), calc(-50% - 10px)); */
+  /* width: calc(100% - 20px); */
   text-align: ${(props) => `${props.props.position}`};
-  font-size: ${(props) => `${props.props.fontSize}`};
+  /* font-family: ${(props) => `${props.props.font}`}; */
+  /* font-size: ${(props) => `${props.props.fontSize}`}; */
+  word-break: break-word;
 `;
