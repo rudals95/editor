@@ -17,7 +17,7 @@ react 로 만든 글 작성 웹
 ## 개발환경
 <div align="center">
 	<img src="https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=white" />
-	<img src="https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white" />
+	<img src="https://img.shields.io/badge/Vite-646CFF?style=flat&logo=Vite&logoColor=white" />
 </div>
 
 
